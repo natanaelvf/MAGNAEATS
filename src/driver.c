@@ -1,10 +1,14 @@
 #include "memory.h"
 #include "main.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <sys/types.h>
 
 /* Função principal de um Motorista. Deve executar um ciclo infinito onde em 
 * cada iteração lê uma operação dos restaurantes e se a mesma tiver id 
 * diferente de -1 e se data->terminate ainda for igual a 0, processa-a e
-* escreve a resposta para os clientes. Operações com id igual a -1 são 
+* escreve a resposta para os driveres. Operações com id igual a -1 são 
 * ignoradas (op inválida) e se data->terminate for igual a 1 é porque foi 
 * dada ordem de terminação do programa, portanto deve-se fazer return do
 * número de operações processadas. Para efetuar estes passos, pode usar os
@@ -14,8 +18,25 @@ int execute_driver(int driver_id, struct communication_buffers* buffers, struct 
 {
     while(1)
     {
-        if (data->terminate == 1) 
+        struct operation* op = malloc(sizeof(struct operation));
+
+        int counter = 0;
+        driver_get_operation(op, driver_id, buffers, data);
+        if (op->id != -1 && *data->terminate == 0) {
+            driver_process_operation(op, driver_id, data, &counter);
+            driver_send_operation(op, driver_id, buffers, data);
+        }
+
+        write_rest_driver_buffer(buffers->main_rest, data->buffers_size, op);
+
+        if (op->id != -1 && *data->terminate == 0) {
+            driver_process_answer(op, driver_id, data, counter);
+        } 
+
+        free(op);
+        if (*data->terminate == 1) {
             return counter;
+        }
     }
 }
 
@@ -26,8 +47,10 @@ int execute_driver(int driver_id, struct communication_buffers* buffers, struct 
 */
 void driver_receive_operation(struct operation* op, struct communication_buffers* buffers, struct main_data* data)
 {
-    if (data->terminate == 1) 
+    if (*data->terminate == 1) {
         return;
+    }
+    read_rest_driver_buffer(buffers->rest_driv, data->buffers_size, op);
 }
 
 
@@ -45,9 +68,9 @@ void driver_process_operation(struct operation* op, int driver_id, struct main_d
 
 
 /* Função que escreve uma operação no buffer de memória partilhada entre
-* motoristas e clientes.
+* motoristas e driveres.
 */
 void driver_send_answer(struct operation* op, struct communication_buffers* buffers, struct main_data* data)
 {
-    
+    write_rest_driver_buffer(buffers->, data->buffers_size, op);
 }

@@ -1,11 +1,10 @@
 #include "main.h"
 #include "memory.h"
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include <sys/types.h>
+
 /* Função que reserva uma zona de memória partilhada com tamanho indicado
 * por size e nome name, preenche essa zona de memória com o valor 0, e 
 * retorna um apontador para a mesma. Pode concatenar o resultado da função
@@ -39,7 +38,15 @@ void* create_shared_memory(char* name, int size)
 */
 void* create_dynamic_memory(int size)
 {
-    
+    int* buff;
+
+    buff = calloc(size, sizeof(int));
+
+    if (buff == NULL) {
+        exit(1);
+    }
+
+    return buff;
 }
 
 

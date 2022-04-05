@@ -1,5 +1,10 @@
 #include "memory.h"
 #include "main.h"
+#include "client.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <sys/types.h>
 
 /* Função principal de um Cliente. Deve executar um ciclo infinito onde em 
 * cada iteração lê uma operação da main e data->terminate ainda for igual a 0,
@@ -13,11 +18,30 @@ int execute_client(int client_id, struct communication_buffers* buffers, struct 
 {
     while(1)
     {
-    if (data->terminate == 1) 
-        return counter;
+        struct operation* op = malloc(sizeof(struct operation));
+
+        int counter = 0;
+        client_get_operation(op, client_id, buffers, data);
+        if (op->id != -1 && *data->terminate == 0) {
+            client_process_operation(op, client_id, data, &counter);
+
+            // TODO check this write
+            write_circular_buffer(buffers->driv_cli, data->buffers_size, op);
+        }
+
+         // TODO check this read
+        read_rnd_access_buffer(buffers->driv_cli, data->buffers_size, op);
+
+        if (op->id != -1 && *data->terminate == 0) {
+            data->results[op->id] = *op;
+        } 
+
+        free(op);
+        if (*data->terminate == 1) {
+            return counter;
+        }
     }
 }
-
 
 /* Função que lê uma operação do buffer de memória partilhada entre os motoristas
 * e clientes que seja direcionada a client_id. Antes de tentar ler a operação, deve
@@ -25,8 +49,10 @@ int execute_client(int client_id, struct communication_buffers* buffers, struct 
 */
 void client_get_operation(struct operation* op, int client_id, struct communication_buffers* buffers, struct main_data* data)
 {
-    if (data->terminate == 1) 
+    if (*data->terminate == 1) {
         return;
+    }
+    read_driver_client_buffer(buffers->driv_cli, data->buffers_size, op);
 }
 
 
