@@ -4,14 +4,14 @@ SRC_DIR = src
 BIN_DIR = bin
 
 
-client.o = main.h memory.h
-driver.o = main.h memory.h
-main.o = main.h memory.h
+client.o = main.h memory.h client.h
+driver.o = main.h memory.h driver.h
+main.o = main.h memory.h process.h
 memory.o = memory.h main.h
-process.o = main.h memory.h
-restaurant.o =  main.h memory.h
+process.o = main.h memory.h process.h restaurant.h driver.h client.h
+restaurant.o =  main.h memory.h restaurant.h
 
-CFLAGS = -g -Wall -O2 -I $(INC_DIR)
+CFLAGS = -std=gnu99 -g -Wall -I $(INC_DIR)
 LIBS = -lm
 
 vpath %.o $(OBJ_DIR)
@@ -19,17 +19,15 @@ vpath %.o $(OBJ_DIR)
 CC = gcc
 OBJECTOS = client.o driver.o main.o memory.o process.o restaurant.o
 
-all: clean magnaeats
-
 magnaeats: $(OBJECTOS)
-	$(CC) $(OBJECTOS) -o $(BIN_DIR)/magnaeats $(LIBS)
+	$(CC) $(CFLAGS) $(addprefix $(OBJ_DIR)/,$(OBJECTOS)) -o bin/magnaeats -pthread -lrt
 
 %.o: src/%.c $($@)
 	$(CC) $(CFLAGS) -o $(OBJ_DIR)/$@ -c $<
 
-valgrind_client: magnaeats
-	$(VLGD)magnaeats 10 1 1 1
+debug:
+	valgrind --leak-check=full --track-origins=yes ./bin/magnaeats 10 1 1 1 1
 
 clean:
-	rm –f *.o out
-	rm –f out
+	rm  $(OBJ_DIR)/*
+	rm  $(BIN_DIR)/*

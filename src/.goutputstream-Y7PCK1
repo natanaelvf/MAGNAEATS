@@ -1,9 +1,16 @@
 #include "memory.h"
 #include "main.h"
+#include "restaurant.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <sys/types.h>
+
+/**
+ * Grupo: SO-26
+Natanael Ferreira: 52678
+Pedro Santos: 53677
+ * /
 
 /* Função principal de um Restaurante. Deve executar um ciclo infinito onde em 
 * cada iteração lê uma operação da main e se e data->terminate ainda for igual a 0, processa-a e
@@ -15,20 +22,30 @@
 */
 int execute_restaurant(int rest_id, struct communication_buffers* buffers, struct main_data* data)
 {
-    while(1) {
-    struct operation* op = malloc(sizeof(struct operation));
-    restaurant_receive_operation(op,rest_id,buffers,data);
-    int counter = 0;
+       while(1)
+    {
+        struct operation* op = malloc(sizeof(struct operation));
+        restaurant_receive_operation(op, rest_id, buffers, data);
+        int counter = 0;
 
-    if (op->id != -1 && *data->terminate == 0) {
-      restaurant_process_operation(op, rest_id, data, &counter);
-      restaurant_forward_operation(op, buffers, data);
+        if (op->id != -1 && *data->terminate == 0) {
+
+            restaurant_process_operation(op, rest_id, data, &counter);
+            write_rest_driver_buffer(buffers->rest_driv, sizeof(buffers->rest_driv), op);
+
+        }
+
+        read_rest_driver_buffer(buffers->rest_driv, sizeof(buffers->rest_driv), op);
+
+        if (op->id != -1 && *data->terminate == 0) {
+            data->results[op->id] = *op;
+        } 
+
+        free(op);
+        if (*data->terminate == 1) {
+            return counter;
+        }
     }
-    free(op);
-    if (*data->terminate == 1) {
-      return counter;
-    }
-  }
 }
 
 
@@ -54,7 +71,7 @@ void restaurant_process_operation(struct operation* op, int rest_id, struct main
 {
     op->receiving_rest = rest_id;
     op->status = 'R';
-    counter+=1;
+    *counter+=1;
     data->results = op;
 }
 

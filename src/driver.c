@@ -1,5 +1,16 @@
 #include "memory.h"
 #include "main.h"
+#include "driver.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <sys/types.h>
+
+/**
+ * Grupo: SO-26
+Natanael Ferreira: 52678
+Pedro Santos: 53677
+ * /
 
 /* Função principal de um Motorista. Deve executar um ciclo infinito onde em 
 * cada iteração lê uma operação dos restaurantes e se a mesma tiver id 
@@ -15,18 +26,20 @@ int execute_driver(int driver_id, struct communication_buffers* buffers, struct 
     while(1)
     {
         struct operation* op = malloc(sizeof(struct operation));
-
+        driver_receive_operation(op, buffers, data);
         int counter = 0;
-        driver_get_operation(op, driver_id, buffers, data);
+
         if (op->id != -1 && *data->terminate == 0) {
+
             driver_process_operation(op, driver_id, data, &counter);
-            driver_send_operation(op, driver_id, buffers, data);
+            write_rest_driver_buffer(buffers->rest_driv, sizeof(buffers->rest_driv), op);
+
         }
 
-        write_rest_driver_buffer(buffers->main_rest, data->buffers_size, op);
+        read_rest_driver_buffer(buffers->rest_driv, sizeof(buffers->rest_driv), op);
 
         if (op->id != -1 && *data->terminate == 0) {
-            driver_process_answer(op, driver_id, data, counter);
+            data->results[op->id] = *op;
         } 
 
         free(op);
@@ -58,7 +71,7 @@ void driver_process_operation(struct operation* op, int driver_id, struct main_d
 {
     op->receiving_driver = driver_id;
     op->status = 'D';
-    counter+=1;
+    *counter+=1;
     data->results = op;
 }
 

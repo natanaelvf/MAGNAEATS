@@ -1,10 +1,20 @@
 #include "main.h"
 #include "memory.h"
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
-#include <sys/stat.h> 
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
 #include <fcntl.h>
-#include <unistd.h>
+#include <unistd.h>   
+
+/**
+ * Grupo: SO-26
+Natanael Ferreira: 52678
+Pedro Santos: 53677
+ * /
+
 
 /* Função que reserva uma zona de memória partilhada com tamanho indicado
 * por size e nome name, preenche essa zona de memória com o valor 0, e 
