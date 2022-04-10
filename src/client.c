@@ -1,10 +1,5 @@
-#include "memory.h"
 #include "main.h"
-#include "client.h"
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sys/types.h>
+#include "memory.h"
 
 /* Função principal de um Cliente. Deve executar um ciclo infinito onde em 
 * cada iteração lê uma operação da main e data->terminate ainda for igual a 0,
@@ -14,8 +9,7 @@
 * portanto deve-se fazer return do o número de operações processadas. Para efetuar
 * estes passos, pode usar os outros métodos auxiliares definidos em client.h. 
 */
-int execute_client(int client_id, struct communication_buffers* buffers, struct main_data* data)
-{
+int execute_client(int client_id, struct communication_buffers* buffers, struct main_data* data) {
     while(1)
     {
         struct operation* op = malloc(sizeof(struct operation));
@@ -52,7 +46,7 @@ void client_get_operation(struct operation* op, int client_id, struct communicat
     if (*data->terminate == 1) {
         return;
     }
-    read_driver_client_buffer(buffers->driv_cli, data->buffers_size, op);
+    read_driver_client_buffer(buffers->driv_cli, client_id, data->buffers_size, op);
 }
 
 

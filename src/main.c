@@ -89,13 +89,12 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 {
 	char* exit_action = "stop";
 	int op_counter = 0;
-	// TODO check why not it's data->max_ops;
+
 	const int max_answer = data->max_ops;
-	//const int max_answer = 12;
 
 	print_help();
 
-	char action[max_answer];
+	char action[12];
 	char* user_action = fgets(action, max_answer, stdin);
 
 	while (!strstr(exit_action, user_action)) {
@@ -119,7 +118,7 @@ void user_interaction(struct communication_buffers* buffers, struct main_data* d
 	stop_execution(data, buffers);
 }
 
-static void print_help()
+void print_help()
 {
 	printf( "Ações disponíveis: \n");
 	printf( "\t request <cliente> <restaurante> <dish> – criar um pedido de encomenda ao restaurante restaurant, feito pelo cliente client, pedindo o prato dish; \n" );

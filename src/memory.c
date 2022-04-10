@@ -1,9 +1,10 @@
 #include "main.h"
 #include "memory.h"
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
-#include <sys/types.h>
+#include <sys/stat.h> 
+#include <fcntl.h>
+#include <unistd.h>
 
 /* Função que reserva uma zona de memória partilhada com tamanho indicado
 * por size e nome name, preenche essa zona de memória com o valor 0, e 
@@ -87,7 +88,16 @@ void destroy_dynamic_memory(void* ptr)
 */
 void write_main_rest_buffer(struct rnd_access_buffer* buffer, int buffer_size, struct operation* op)
 {
-    
+    int i, *val;
+	for(i=0; i < buffer_size; i++) {
+		val = (int *)(buffer->ptrs + sizeof(int)*i);
+		if ( *val == 0) {
+			memcpy(buffer->ptrs + sizeof(struct operation)*i, op, sizeof(struct operation));
+			*val = 1;
+			return;
+		}
+	}
+	return;
 }
 
 
@@ -98,7 +108,14 @@ void write_main_rest_buffer(struct rnd_access_buffer* buffer, int buffer_size, s
 */
 void write_rest_driver_buffer(struct circular_buffer* buffer, int buffer_size, struct operation* op)
 {
-    
+   while (1) {
+		while (((buffer->ptrs->in + 1) % buffer_size) == buffer->ptrs->out) {
+			//buffer cheio; esperar que out seja avançado pelo consumidor
+			sleep(1000);
+		}
+		memcpy(buffer->buffer + sizeof(struct operation) * buffer->ptrs->in, op, sizeof(struct operation));
+		buffer->ptrs->in = (buffer->ptrs->in + 1) % buffer_size;
+	}
 }
 
 
@@ -109,7 +126,16 @@ void write_rest_driver_buffer(struct circular_buffer* buffer, int buffer_size, s
 */
 void write_driver_client_buffer(struct rnd_access_buffer* buffer, int buffer_size, struct operation* op)
 {
-    
+    int i, *val;
+	for(i=0; i < buffer_size; i++) {
+		val = (int *)(buffer->ptrs + sizeof(int)*i);
+		if ( *val == 0) {
+			memcpy(buffer->ptrs + sizeof(struct operation)*i, op, sizeof(struct operation));
+			*val = 1;
+			return;
+		}
+	}
+	return;
 }
 
 
@@ -120,7 +146,16 @@ void write_driver_client_buffer(struct rnd_access_buffer* buffer, int buffer_siz
 */
 void read_main_rest_buffer(struct rnd_access_buffer* buffer, int rest_id, int buffer_size, struct operation* op)
 {
-    
+    int i, *val;
+	for(i=0; i < buffer_size; i++) {
+		val = (int *)(buffer->ptrs + sizeof(int)*i);
+		if ( *val == 1) {
+			memcpy(op,buffer->ptrs + sizeof(struct operation)*i,  sizeof(struct operation));
+			*val = 0;
+			return;
+		}
+	}
+	op = (struct operation *)-1;
 }
 
 
@@ -131,7 +166,14 @@ void read_main_rest_buffer(struct rnd_access_buffer* buffer, int rest_id, int bu
 */
 void read_rest_driver_buffer(struct circular_buffer* buffer, int buffer_size, struct operation* op)
 {
-    
+    while (1) {
+			while (buffer->ptrs->in == buffer->ptrs->out) {
+				//buffer vazio;
+				sleep(1000);
+			}
+			memcpy(op, buffer->buffer+sizeof(struct operation)*buffer->ptrs->in, sizeof(struct operation));
+			buffer->ptrs->out = (buffer->ptrs->out + 1) % buffer_size;
+	}
 }
 
 
@@ -142,5 +184,14 @@ void read_rest_driver_buffer(struct circular_buffer* buffer, int buffer_size, st
 */
 void read_driver_client_buffer(struct rnd_access_buffer* buffer, int client_id, int buffer_size, struct operation* op)
 {
-    
+    int i, *val;
+	for(i=0; i < buffer_size; i++) {
+		val = (int *)(buffer->ptrs + sizeof(int)*i);
+		if ( *val == 1) {
+			memcpy(op,buffer->ptrs + sizeof(struct operation)*i,  sizeof(struct operation));
+			*val = 0;
+			return;
+		}
+	}
+	op = (struct operation *)-1;
 }

@@ -1,9 +1,5 @@
 #include "memory.h"
 #include "main.h"
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sys/types.h>
 
 /* Função principal de um Motorista. Deve executar um ciclo infinito onde em 
 * cada iteração lê uma operação dos restaurantes e se a mesma tiver id 
@@ -72,5 +68,5 @@ void driver_process_operation(struct operation* op, int driver_id, struct main_d
 */
 void driver_send_answer(struct operation* op, struct communication_buffers* buffers, struct main_data* data)
 {
-    write_rest_driver_buffer(buffers->, data->buffers_size, op);
+    write_rest_driver_buffer(buffers->rest_driv, data->buffers_size, op);
 }

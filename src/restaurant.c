@@ -1,9 +1,5 @@
 #include "memory.h"
 #include "main.h"
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sys/types.h>
 
 /* Função principal de um Restaurante. Deve executar um ciclo infinito onde em 
 * cada iteração lê uma operação da main e se e data->terminate ainda for igual a 0, processa-a e
@@ -21,8 +17,8 @@ int execute_restaurant(int rest_id, struct communication_buffers* buffers, struc
     int counter = 0;
 
     if (op->id != -1 && *data->terminate == 0) {
-      restaurant_process_operation(op, rest_id, op->receiving_rest, data, &counter);
-      restaurant_forward_operation(op, rest_id, buffers, data);
+      restaurant_process_operation(op, rest_id, data, &counter);
+      restaurant_forward_operation(op, buffers, data);
     }
     free(op);
     if (*data->terminate == 1) {
